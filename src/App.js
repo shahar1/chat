@@ -1,25 +1,54 @@
-import logo from './logo.svg';
-import './App.css';
+import React from "react";
+import {BrowserRouter, Route, Switch, Redirect} from "react-router-dom";
+import {connect} from "react-redux";
+import * as ChatActions from "./store/actions/chatActions";
+import Auth from "./components/pages/Auth";
+import "bootstrap/dist/css/bootstrap.min.css";
 
-function App() {
-  return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
-  );
+class App extends React.Component {
+  componentDidMount() {
+      this.props.setupSocket();
+  }
+
+  render() {
+      return (
+          <div className={"App"}>
+              <BrowserRouter>
+                  <Switch>
+                      <Route
+                          path={"/login"}
+                          component={Auth}/>
+
+                      <Route
+                          path={"/signup"}
+                          component={Auth}/>
+                      <Route
+                          path={"/"}
+                          render={props => {
+                              if(!this.props.token){
+                                  return <Redirect to={"/login"}/>
+                              }
+
+                              return <h1>Root</h1>
+                          }}/>
+                  </Switch>
+              </BrowserRouter>
+          </div>
+      );
+  }
 }
 
-export default App;
+
+const mapStateToProps = state => ({
+    ...state.auth,
+    ...state.chat,
+});
+
+const mapDispatchToProps = dispatch => ({
+    setupSocket: () => {
+        dispatch(ChatActions.setupSocket())
+    }
+});
+
+
+export default connect(mapStateToProps,mapDispatchToProps)(App);
